@@ -1,6 +1,5 @@
 var Hapi = require('hapi');
 
-
 var uuid = 1;       // Use seq instead of proper unique identifiers for demo only
 
 var users = {
@@ -75,11 +74,12 @@ var logout = function (request, reply) {
     return reply.redirect('/');
 };
 
-var server = new Hapi.Server(8000);
+var server = new Hapi.Server();
+server.connection({ port: 8000 });
 
-server.pack.register(require('../'), function (err) {
+server.register(require('../'), function (err) {
 
-    var cache = server.cache('sessions', { expiresIn: 3 * 24 * 60 * 60 * 1000 });
+    var cache = server.cache({ segment: 'sessions', expiresIn: 3 * 24 * 60 * 60 * 1000 });
     server.app.cache = cache;
 
     server.auth.strategy('session', 'cookie', true, {
@@ -99,7 +99,7 @@ server.pack.register(require('../'), function (err) {
                     return callback(null, false);
                 }
 
-                return callback(null, true, cached.item.account)
+                return callback(null, true, cached.account)
             })
         }
     });
